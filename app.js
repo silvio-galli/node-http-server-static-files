@@ -1,13 +1,28 @@
 const PORT = 3000
 const http = require('http')
 const fs = require('fs')
-const basedir = __dirname + '/public/'
+console.log("__dirname ->", __dirname)
+const basedir = __dirname + '/static'
 
 const server = http.createServer((req, res) => {
-  console.log("req.url ->", req.url)
-  fs.readFile(basedir + 'index.html', 'utf8', (err, data) => {
+  //console.log("req.url ->", req.url)
+  let filePath = req.url[req.url.length - 1] === "/" ? req.url + 'index.html' : req.url
+  console.log("basedir + filePath ->", basedir + filePath)
+
+  fs.readFile(basedir + filePath, 'utf8', (err, data) => {
     if (err) {
       console.log(err)
+      fs.readFile(basedir + '/404.html', (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          res.writeHead(404, {
+            "content-Type": "text/html"
+          })
+          res.write(data)
+          res.end()
+        }
+      })
     } else {
       res.writeHead(200, {
         'Content-type': 'text/html'
