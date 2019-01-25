@@ -2,21 +2,35 @@ const PORT = 3000
 const http = require('http')
 const fs = require('fs')
 
-const basedir = __dirname + '/static'
+// content types to insert in the response header
 const contentTypes = {
   'html': 'text/html',
-  'htm':  'text/html',
   'css':  'text/css',
   'txt':  'text/plain',
-  'js':   'application/javascript'
-
+  'js':   'application/javascript',
+  'jpg':  'image/jpeg',
+  'jpeg': 'image/jpeg',
+  'png':  'image/png',
+  'gif':  'image/gif',
+  'tif':  'image/tiff',
+  'tiff': 'image/tiff',
+  'svg':  'image/svg+xml',
+  'ico':  'image/x-icon'
 }
+// basedir where the static files are stored
+const basedir = __dirname + '/static'
+
 const server = http.createServer((req, res) => {
-  //console.log("req.url ->", req.url)
-  let filePath = req.url[req.url.length - 1] === "/" ? req.url + 'index.html' : req.url
+  // index.html files need to be added to the file path
+  // when the request is a directory i.e. /about/ --> /about/index.html
+  let filePath = req.url[req.url.length - 1] === "/" ? basedir + req.url + 'index.html' : basedir + req.url
+  // finding the type of file will be used to send the correct contet-type
+  // in the response header
   let extension = req.url.split('.').pop()
   let fileType = extension === req.url ? 'html' : extension
-  fs.readFile(basedir + filePath, 'utf8', (err, data) => {
+  fs.readFile(filePath, (err, data) => {
+    // if there is an error reading the file
+    // we send back a 404 response code
     if (err) {
       console.log(err)
       fs.readFile(basedir + '/404.html', 'utf8', (err, data) => {
@@ -31,6 +45,7 @@ const server = http.createServer((req, res) => {
         }
       })
     } else {
+      // if everything is ok we send back the right file
       res.writeHead(200, {
         'Content-type': contentTypes[fileType],
         'Host': 'localhost:3000'
