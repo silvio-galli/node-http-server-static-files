@@ -1,23 +1,30 @@
 const PORT = 3000
 const http = require('http')
 const fs = require('fs')
-console.log("__dirname ->", __dirname)
-const basedir = __dirname + '/static'
 
+const basedir = __dirname + '/static'
+const contentTypes = {
+  'html': 'text/html',
+  'htm':  'text/html',
+  'css':  'text/css',
+  'txt':  'text/plain',
+  'js':   'application/javascript'
+
+}
 const server = http.createServer((req, res) => {
   //console.log("req.url ->", req.url)
   let filePath = req.url[req.url.length - 1] === "/" ? req.url + 'index.html' : req.url
-  console.log("basedir + filePath ->", basedir + filePath)
-
+  let extension = req.url.split('.').pop()
+  let fileType = extension === req.url ? 'html' : extension
   fs.readFile(basedir + filePath, 'utf8', (err, data) => {
     if (err) {
       console.log(err)
-      fs.readFile(basedir + '/404.html', (err, data) => {
+      fs.readFile(basedir + '/404.html', 'utf8', (err, data) => {
         if (err) {
           console.log(err)
         } else {
           res.writeHead(404, {
-            "content-Type": "text/html"
+            "content-Type": contentTypes[fileType]
           })
           res.write(data)
           res.end()
@@ -25,7 +32,8 @@ const server = http.createServer((req, res) => {
       })
     } else {
       res.writeHead(200, {
-        'Content-type': 'text/html'
+        'Content-type': contentTypes[fileType],
+        'Host': 'localhost:3000'
       })
       res.write(data)
       res.end()
@@ -33,4 +41,4 @@ const server = http.createServer((req, res) => {
   })
 })
 
-server.listen(PORT, () => console.log(`Server listening on port ${PORT}`))
+server.listen(PORT, () => console.log(`Server listening on localhost:${PORT}`))
